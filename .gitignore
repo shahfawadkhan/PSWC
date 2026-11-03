@@ -1,0 +1,47 @@
+
+# Dependencies
+node_modules/
+venv/
+env/
+.venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# React / Vite build
+dist/
+build/
+
+# Python build files
+*.egg-info/
+.eggs/
+wheels/
+*.whl
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# IDE settings
+.vscode/
+.idea/
+
+# Operating system
+.DS_Store
+Thumbs.db
+
+# Testing and coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Jupyter
+.ipynb_checkpoints/
