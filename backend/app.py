@@ -4,6 +4,7 @@ from flask_cors import CORS
 from collections import OrderedDict
 import numpy as np, pandas as pd
 from flask import Flask, request, jsonify, send_file
+from werkzeug.exceptions import HTTPException
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 4 * 1024**3
@@ -163,8 +164,15 @@ def get(i):
     if i not in DATA: raise KeyError("Dataset not found (the server may have restarted). Upload again.")
     return DATA[i]
 
+from werkzeug.exceptions import HTTPException
+
 @app.errorhandler(Exception)
-def fail(e): return jsonify(error=str(e)), 400
+def fail(e):
+    if isinstance(e, HTTPException):
+        return jsonify(error=e.description), e.code
+
+    app.logger.exception("Unexpected server error")
+    return jsonify(error="Internal server error"), 500
 
 # ------------------------------------------------------------------ routes
 @app.get("/api/methods")
@@ -208,6 +216,13 @@ def series(i):
         hit = hit.iloc[:: max(1, len(hit) // 1500)]
         out["out"] = pack(hit.index, hit.to_numpy(float))
     return jsonify(out)
+
+@app.get("/")
+def home():
+    return jsonify({
+        "status": "success",
+        "message": "PSWC Backend is running"
+    })
 
 @app.get("/api/datasets/<i>/csv")
 def csv(i):
