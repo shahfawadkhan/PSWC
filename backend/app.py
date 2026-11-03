@@ -1,5 +1,6 @@
 """PSWC magnetometer cleaning backend: read files -> UTC table -> remove outliers -> smooth."""
-import io, re, uuid, zipfile
+import io, re, uuid, zipfile, os
+from flask_cors import CORS
 from collections import OrderedDict
 import numpy as np, pandas as pd
 from flask import Flask, request, jsonify, send_file
@@ -10,6 +11,8 @@ DATA = OrderedDict()                      # dataset id -> {raw, clean, mask, met
 TZ = {"ned": 5, "didd": 0, "lama": 0, "gfgm": 0}   # default: hours the file clock is AHEAD of UTC (NED assumed PKT)
 MONTHS = {m: i + 1 for i, m in enumerate("JAN FEB MAR APR MAY JUN JUL AUG SEP OCT NOV DEC".split())}
 
+
+CORS(app)
 # ------------------------------------------------------------------ readers
 def read_ned(name, raw):
     df = pd.read_csv(io.BytesIO(raw))
@@ -213,4 +216,8 @@ def csv(i):
     return send_file(buf, mimetype="text/csv", as_attachment=True, download_name=f"{d['kind']}_{request.args.get('which', 'raw')}_utc.csv")
 
 if __name__ == "__main__":
-    app.run(port=5000, debug=False)
+    app.run(
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", 5000)),
+        debug=False
+    )
