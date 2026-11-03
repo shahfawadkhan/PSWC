@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import factory from "react-plotly.js/factory";
 import Plotly from "plotly.js-basic-dist-min";
 const Plot = (factory.default || factory)(Plotly);
+const API_BASE = import.meta.env.VITE_API_URL || "";
 
 const api = async (url, opts) => {
-  const r = await fetch(url, opts);
+  const r = await fetch(`${API_BASE}${url}`, opts);
   const j = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(j.error || `Request failed (${r.status})`);
   return j;
@@ -165,8 +166,8 @@ export default function App() {
 
           <section className={ds ? "" : "off"}>
             <h2><span className="num">3</span> Export</h2>
-            <button className="ghost" disabled={!hasRun} onClick={() => (window.location = `/api/datasets/${ds.id}/csv?which=clean`)}>Cleaned data (CSV)</button>
-            <button className="ghost" disabled={!ds} onClick={() => (window.location = `/api/datasets/${ds.id}/csv?which=raw`)}>Standardised raw, UTC (CSV)</button>
+            <button className="ghost" disabled={!hasRun} onClick={() => (window.location = `${API_BASE}/api/datasets/${ds.id}/csv?which=clean`)}>Cleaned data (CSV)</button>
+            <button className="ghost" disabled={!ds} onClick={() => (window.location = `${API_BASE}/api/datasets/${ds.id}/csv?which=raw`)}>Standardised raw, UTC (CSV)</button>
             <button className="ghost" disabled={!ds} onClick={saveSettings}>Settings (JSON)</button>
           </section>
         </aside>
