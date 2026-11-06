@@ -1,0 +1,1 @@
+"""PSWC magnetometer cleaning package."""
