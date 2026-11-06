@@ -5,8 +5,8 @@ export default function Header({ ds, busy }) {
       <div className="flex items-center gap-3">
         <div className="grid h-9 w-9 place-items-center rounded-lg bg-white text-lg font-bold text-blue-700">P</div>
         <div>
-          <h1 className="text-base font-semibold leading-tight">PSWC Magnetometer Data Cleaner</h1>
-          <p className="text-xs text-blue-100">Outlier removal and smoothing</p>
+          <h1 className="text-base font-semibold leading-tight">PSWC</h1>
+          <p className="text-xs text-blue-100">Outlier removal and smoothing (Current Progress)</p>
         </div>
       </div>
       <div className="flex gap-2 text-xs">
