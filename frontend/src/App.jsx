@@ -13,7 +13,7 @@ export default function App() {
   const [methods, setMethods] = useState(null);
   const [files, setFiles] = useState([]);
   const [instrument, setInstrument] = useState("auto");
-  const [tz, setTz] = useState("");
+  const [zone, setZone] = useState("utc");   // time zone shown: "utc" or "lt" (Pakistan time = UTC + 5)
   const [ds, setDs] = useState(null);
   const [cols, setCols] = useState([]);
   const [col, setCol] = useState("");
@@ -29,9 +29,9 @@ export default function App() {
   useEffect(() => { getMethods().then(setMethods).catch((e) => setError(e.message)); }, []);
 
   const loadSeries = (range) => {
-    if (ds && col) getSeries(ds.id, col, range).then(setData).catch((e) => setError(e.message));
+    if (ds && col) getSeries(ds.id, col, range, zone).then(setData).catch((e) => setError(e.message));
   };
-  useEffect(() => { loadSeries(null); }, [ds, col, version]);
+  useEffect(() => { loadSeries(null); }, [ds, col, version, zone]);
 
   const run = async (job) => {
     setBusy(true); setError("");
@@ -40,8 +40,8 @@ export default function App() {
   };
 
   const onUpload = () => run(async () => {
-    const d = await uploadFiles(files, instrument, tz);
-    setDs(d); setCols(d.columns.filter((c) => c !== "Temp")); setCol(d.columns[0]);
+    const d = await uploadFiles(files, instrument);
+    setDs(d); setZone(d.native.toLowerCase()); setCols(d.columns.filter((c) => c !== "Temp")); setCol(d.columns[0]);
     setHistory([]); setData(null); setOutlier({ method: "none" }); setSmooth({ method: "none" });
   });
 
@@ -60,19 +60,19 @@ export default function App() {
   };
 
   const onSaveSettings = () => {
-    const blob = new Blob([JSON.stringify({ instrument: ds.instrument, tz_applied: ds.tz_applied, columns: cols, outlier, smooth }, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify({ instrument: ds.instrument, file_time: ds.native, time_shown: zone.toUpperCase(), columns: cols, outlier, smooth }, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob); a.download = "cleaning_settings.json"; a.click();
   };
 
   return (
     <div className="flex h-screen flex-col">
-      <Header ds={ds} busy={busy} />
+      <Header ds={ds} busy={busy} zone={zone} />
       <div className="grid min-h-0 flex-1 grid-cols-[340px_1fr]">
         <aside className="overflow-auto border-r border-slate-200 bg-slate-100/70 p-4">
-          <UploadPanel {...{ files, setFiles, instrument, setInstrument, tz, setTz, onUpload, busy }} />
+          <UploadPanel {...{ files, setFiles, instrument, setInstrument, ds, zone, setZone, onUpload, busy }} />
           <CleanPanel {...{ ds, methods, cols, setCols, outlier, setOutlier, smooth, setSmooth, onApply, busy }} />
-          <ExportPanel ds={ds} hasRun={history.length > 0} onSaveSettings={onSaveSettings} />
+          <ExportPanel ds={ds} zone={zone} hasRun={history.length > 0} onSaveSettings={onSaveSettings} />
         </aside>
         <main className="overflow-auto p-5">
           {error && (
@@ -82,8 +82,8 @@ export default function App() {
           )}
           {!ds && <Welcome />}
           {ds && (<>
-            <Stats ds={ds} />
-            <PlotCard ds={ds} col={col} setCol={setCol} data={data} onRelayout={onRelayout} />
+            <Stats ds={ds} zone={zone} />
+            <PlotCard ds={ds} zone={zone} col={col} setCol={setCol} data={data} onRelayout={onRelayout} />
             <HistoryTable history={history} />
           </>)}
         </main>

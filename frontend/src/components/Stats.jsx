@@ -1,7 +1,8 @@
-export default function Stats({ ds }) {
+export default function Stats({ ds, zone }) {
+  const Z = zone.toUpperCase();
   const items = [
     ["Instrument", ds.instrument.toUpperCase()], ["Rows", ds.rows.toLocaleString()],
-    ["Start (UTC)", ds.start.slice(0, 19)], ["End (UTC)", ds.end.slice(0, 19)],
+    [`Start (${Z})`, ds[`start_${zone}`].slice(0, 19)], [`End (${Z})`, ds[`end_${zone}`].slice(0, 19)],
     ["Sampling", `${ds.sampling_s.toFixed(3)} s`], ["Gaps", ds.gaps],
     ["Missing", Object.entries(ds.missing).map(([k, v]) => `${k}:${v}`).join(" ")],
   ];

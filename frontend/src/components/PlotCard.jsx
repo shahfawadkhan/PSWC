@@ -4,7 +4,7 @@ import { cardCls } from "../ui";
 
 const Plot = (factory.default || factory)(Plotly);
 
-export default function PlotCard({ ds, col, setCol, data, onRelayout }) {
+export default function PlotCard({ ds, zone, col, setCol, data, onRelayout }) {
   const tr = (d, name, extra) => d && { x: d.t, y: d.v, name, connectgaps: false, type: "scatter", ...extra };
   const traces = data ? [
     tr(data.raw, "raw", { mode: "lines", line: { color: "#94a3b8", width: 1 } }),
@@ -24,7 +24,7 @@ export default function PlotCard({ ds, col, setCol, data, onRelayout }) {
       </div>
       <p className="mb-2 mt-1 text-xs text-slate-500">Drag to zoom, double-click to reset. Zooming loads finer detail. Grey = raw, blue = cleaned, red = removed.</p>
       <Plot data={traces} onRelayout={onRelayout} useResizeHandler style={{ width: "100%", height: 460 }}
-        layout={{ uirevision: `${ds.id}${col}`, margin: { l: 60, r: 20, t: 10, b: 50 }, paper_bgcolor: "rgba(0,0,0,0)", xaxis: { title: "UTC" }, yaxis: { title: `${col} (nT)` }, legend: { orientation: "h" } }}
+        layout={{ uirevision: `${ds.id}${col}${zone}`, margin: { l: 60, r: 20, t: 10, b: 50 }, paper_bgcolor: "rgba(0,0,0,0)", xaxis: { title: zone.toUpperCase() }, yaxis: { title: `${col} (nT)` }, legend: { orientation: "h" } }}
         config={{ displaylogo: false }} />
     </div>
   );

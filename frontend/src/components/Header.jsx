@@ -1,5 +1,5 @@
-export default function Header({ ds, busy }) {
-  const chips = ds ? [ds.instrument.toUpperCase(), `${ds.rows.toLocaleString()} rows`, "Time: UTC"] : [];
+export default function Header({ ds, busy, zone }) {
+  const chips = ds ? [ds.instrument.toUpperCase(), `${ds.rows.toLocaleString()} rows`, `Data in ${zone.toUpperCase()}`] : [];
   return (
     <header className="flex h-16 flex-none items-center justify-between bg-blue-700 px-6 text-white shadow">
       <div className="flex items-center gap-3">

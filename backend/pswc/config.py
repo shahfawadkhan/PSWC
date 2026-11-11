@@ -1,5 +1,6 @@
 """Settings in one place."""
-TZ = {"ned": 5, "didd": 0, "lama": 0, "gfgm": 0}   # default: hours the file clock is AHEAD of UTC (NED assumed PKT)
+LT_OFFSET_HOURS = 5   # Pakistan local time (LT) = UTC + 5, fixed
+NATIVE_ZONE = {"ned": "LT", "didd": "UTC", "lama": "UTC", "gfgm": "UTC"}   # time zone each instrument writes its files in
 MONTHS = {m: i + 1 for i, m in enumerate("JAN FEB MAR APR MAY JUN JUL AUG SEP OCT NOV DEC".split())}
 MAX_DATASETS = 4                                   # datasets kept in memory
 MAX_UPLOAD_BYTES = 4 * 1024**3

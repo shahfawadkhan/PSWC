@@ -1,7 +1,7 @@
 import Section from "./Section";
-import { inputCls, selectCls, primaryBtn } from "../ui";
+import { selectCls, primaryBtn } from "../ui";
 
-export default function UploadPanel({ files, setFiles, instrument, setInstrument, tz, setTz, onUpload, busy }) {
+export default function UploadPanel({ files, setFiles, instrument, setInstrument, ds, zone, setZone, onUpload, busy }) {
   return (
     <Section n="1" title="Upload">
       <label className="block cursor-pointer rounded-lg border-2 border-dashed border-blue-200 bg-blue-50/50 p-3 text-center text-sm text-blue-700 hover:border-blue-400">
@@ -16,11 +16,21 @@ export default function UploadPanel({ files, setFiles, instrument, setInstrument
           <option value="lama">LAMA</option><option value="gfgm">GFGM</option>
         </select>
       </div>
-      <div className="mt-2 flex items-center justify-between gap-2 text-xs text-slate-600">
-        <span>Clock ahead of UTC (h)</span>
-        <input type="number" step="any" placeholder="default" className={inputCls} value={tz} onChange={(e) => setTz(e.target.value)} />
+      <div className="mt-3 border-t border-dashed border-slate-200 pt-3">
+        <div className="flex items-center justify-between gap-2 text-xs text-slate-600">
+          <span>Show data in</span>
+          <div className="flex overflow-hidden rounded-md border border-slate-300">
+            {["utc", "lt"].map((z) => (
+              <button key={z} type="button" disabled={!ds} onClick={() => setZone(z)}
+                className={`px-3 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-50 ${ds && zone === z ? "bg-blue-600 text-white" : "bg-white text-slate-600 hover:bg-blue-50"}`}>{z.toUpperCase()}</button>
+            ))}
+          </div>
+        </div>
+        <p className="mt-2 text-xs text-slate-500">
+          {ds ? `This ${ds.instrument.toUpperCase()} file is in ${ds.native}. ` : "NED files are in LT, all other instruments are in UTC. "}
+          LT = UTC + 5 (Pakistan).
+        </p>
       </div>
-      <p className="mt-2 text-xs text-slate-500">Defaults: NED +5 (assumed Pakistan time), others 0.</p>
       <button className={primaryBtn} onClick={onUpload} disabled={busy || !files.length}>Upload</button>
     </Section>
   );

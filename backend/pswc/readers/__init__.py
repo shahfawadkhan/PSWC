@@ -4,7 +4,7 @@ import zipfile
 
 import pandas as pd
 
-from ..config import TZ
+from ..config import LT_OFFSET_HOURS, NATIVE_ZONE
 from .didd import read_didd
 from .gfgm import read_gfgm
 from .lama import read_lama
@@ -21,7 +21,7 @@ def detect(name):
     if n.endswith(".txt"): return "gfgm"
 
 
-def load(files, instrument, tz):
+def load(files, instrument):
     items = []
     for name, raw in files:                                      # expand zips
         if name.lower().endswith(".zip"):
@@ -37,7 +37,8 @@ def load(files, instrument, tz):
     parts = [READERS[kind](n.replace("\\", "/").split("/")[-1], r) for n, r in items if detect(n) == kind or instrument != "auto"]
     df = pd.concat(parts).sort_index()
     df = df[~df.index.duplicated()]
-    shift = TZ[kind] if tz is None else tz
-    df.index = (df.index - pd.Timedelta(hours=shift)).astype("datetime64[ns]")   # -> UTC
+    native = NATIVE_ZONE[kind]                      # NED files are in LT, all others in UTC
+    shift = LT_OFFSET_HOURS if native == "LT" else 0
+    df.index = (df.index - pd.Timedelta(hours=shift)).astype("datetime64[ns]")   # stored internally in UTC
     df.index.name = "time_utc"
-    return kind, shift, df.astype(float)
+    return kind, native, df.astype(float)
