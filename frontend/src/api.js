@@ -9,16 +9,19 @@ const request = async (path, opts) => {
 };
 
 export const getMethods = () => request("/api/methods");
+export const getStations = () => request("/api/stations");
 
-export const uploadFiles = (files, instrument) => {
+export const uploadFiles = (files, instrument, station) => {
   const f = new FormData();
   files.forEach((x) => f.append("files", x));
   f.append("instrument", instrument);
+  f.append("station", station);
   return request("/api/upload", { method: "POST", body: f });
 };
 
-export const processRun = (id, body) =>
-  request(`/api/datasets/${id}/process`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+const postJson = (path, body) => request(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+export const processRun = (id, body) => postJson(`/api/datasets/${id}/process`, body);
+export const resetCleaning = (id) => postJson(`/api/datasets/${id}/reset`, {});
 
 export const getSeries = (id, col, range, zone) => {
   const q = new URLSearchParams({ col, zone });
@@ -26,4 +29,5 @@ export const getSeries = (id, col, range, zone) => {
   return request(`/api/datasets/${id}/series?${q}`);
 };
 
-export const csvUrl = (id, which, zone) => `${API}/api/datasets/${id}/csv?which=${which}&zone=${zone}`;
+// q: { which: "raw"|"clean", scope: "file"|"window"|"all", zone, file, start, end }
+export const csvUrl = (id, q) => `${API}/api/datasets/${id}/csv?${new URLSearchParams(q)}`;

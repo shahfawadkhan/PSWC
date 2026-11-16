@@ -1,7 +1,7 @@
 import Section from "./Section";
 import { selectCls, primaryBtn } from "../ui";
 
-export default function UploadPanel({ files, setFiles, instrument, setInstrument, ds, zone, setZone, onUpload, busy }) {
+export default function UploadPanel({ files, setFiles, instrument, setInstrument, stations, station, setStation, ds, zone, setZone, onUpload, busy }) {
   return (
     <Section n="1" title="Upload">
       <label className="block cursor-pointer rounded-lg border-2 border-dashed border-blue-200 bg-blue-50/50 p-3 text-center text-sm text-blue-700 hover:border-blue-400">
@@ -14,6 +14,13 @@ export default function UploadPanel({ files, setFiles, instrument, setInstrument
         <select className={selectCls} value={instrument} onChange={(e) => setInstrument(e.target.value)}>
           <option value="auto">auto-detect</option><option value="ned">NED</option><option value="didd">dIdD</option>
           <option value="lama">LAMA</option><option value="gfgm">GFGM</option>
+        </select>
+      </div>
+      <div className="mt-2 flex items-center justify-between gap-2 text-xs text-slate-600">
+        <span>Station</span>
+        <select className={selectCls} value={station} onChange={(e) => setStation(e.target.value)}>
+          <option value="auto">auto-detect</option>
+          {stations.map((s) => <option key={s.code} value={s.code}>{s.code} - {s.name}</option>)}
         </select>
       </div>
       <div className="mt-3 border-t border-dashed border-slate-200 pt-3">

@@ -1,6 +1,6 @@
 import { cardCls } from "../ui";
 
-const heads = ["Run", "Outliers", "Smoothing", "Column", "Removed", "%", "Noise before (nT)", "Noise after (nT)"];
+const heads = ["Run", "Outliers", "Smoothing", "Range", "Column", "Removed", "%", "Noise before (nT)", "Noise after (nT)"];
 
 export default function HistoryTable({ history }) {
   return (
@@ -14,7 +14,7 @@ export default function HistoryTable({ history }) {
             <tbody>
               {[...history].reverse().flatMap((h) => h.report.map((r) => (
                 <tr key={`${h.n}${r.column}`} className="border-b border-slate-100 text-slate-700">
-                  <td className="px-3 py-1.5">{h.n}</td><td className="px-3 py-1.5">{h.outlier.method}</td><td className="px-3 py-1.5">{h.smooth.method}</td>
+                  <td className="px-3 py-1.5">{h.n}</td><td className="px-3 py-1.5">{h.outlier.method}</td><td className="px-3 py-1.5">{h.smooth.method}</td><td className="px-3 py-1.5">{h.range ? `${h.range.start.slice(5, 16)} to ${h.range.end.slice(5, 16)}` : "whole data"}</td>
                   <td className="px-3 py-1.5">{r.column}</td><td className="px-3 py-1.5">{r.outliers}</td><td className="px-3 py-1.5">{r.outlier_pct}</td>
                   <td className="px-3 py-1.5">{r.noise_before?.toFixed(3)}</td><td className="px-3 py-1.5">{r.noise_after?.toFixed(3)}</td>
                 </tr>

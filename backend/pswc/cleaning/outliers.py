@@ -24,6 +24,10 @@ def apply_outliers(s, o):
     """Apply the chosen outlier method. Returns (values, mask of flagged points)."""
     m = o.get("method", "none")
     mask, x = pd.Series(False, index=s.index), s.copy()
+    if m == "manual":                                # single outliers: replace the chosen range by a straight line
+        a, e = o["range_utc"]
+        mask = pd.Series((s.index >= a) & (s.index <= e), index=s.index)
+        return s.mask(mask).interpolate(method="time", limit_area="inside"), mask
     if m == "cap":                                   # capping: pull extremes back to the percentile limits
         med = roll(s, o["window_s"], center=True, min_periods=3).median()
         r = s - med
