@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { getMethods, getSeries, getStations, processRun, resetCleaning, uploadFiles } from "./api";
-import { addDays } from "./time";
+import Plotly from "plotly.js-basic-dist-min";
+import { addDays, addSeconds } from "./time";
 import Header from "./components/Header";
 import UploadPanel from "./components/UploadPanel";
 import CleanPanel from "./components/CleanPanel";
@@ -37,6 +38,8 @@ export default function App() {
   const [error, setError] = useState("");
   const [version, setVersion] = useState(0);
   const timer = useRef(null);
+  const graph = useRef(null);                   // the plot element, used for the PNG export
+  const [ops, setOps] = useState([]);           // what was applied: "cl" (outliers) and/or "sm" (smoothing)
 
   useEffect(() => {
     getMethods().then(setMethods).catch((e) => setError(e.message));
@@ -72,7 +75,7 @@ export default function App() {
     setDs(d); setZone(d.native.toLowerCase()); setFileIdx(0); setMode("file"); setDays(1); setDayShift(0);
     setCols(d.columns.filter((c) => c !== "Temp")); setCol(d.columns[0]);
     setHistory([]); setData(null); setOutlier({ method: "none" }); setSmooth({ method: "none" });
-    setScope("file"); setRStart(""); setREnd("");
+    setScope("file"); setRStart(""); setREnd(""); setOps([]);
   });
 
   const onApply = () => run(async () => {
@@ -81,11 +84,12 @@ export default function App() {
     if (scope === "range") range = { start: rStart, end: rEnd };
     else if (scope === "file") { const f = ds.files[fileIdx]; range = { start: f[`start_${zone}`], end: f[`end_${zone}`] }; }
     const r = await processRun(ds.id, { columns: cols, outlier, smooth, zone, range });
+    setOps(r.ops);
     setHistory((h) => [...h, { n: h.length + 1, outlier, smooth, range, report: r.report }]);
     setVersion((v) => v + 1);
   });
 
-  const onReset = () => run(async () => { await resetCleaning(ds.id); setHistory([]); setVersion((v) => v + 1); });
+  const onReset = () => run(async () => { await resetCleaning(ds.id); setHistory([]); setOps([]); setVersion((v) => v + 1); });
 
   // file / day navigation
   const chooseFile = (i) => { setFileIdx(Math.max(0, Math.min(ds.files.length - 1, i))); setDayShift(0); };
@@ -115,6 +119,13 @@ export default function App() {
   const useZoom = () => { if (zoom) { setRStart(String(zoom[0]).slice(0, 19)); setREnd(String(zoom[1]).slice(0, 19)); } };
   const useWindow = () => { setRStart(win.start); setREnd(win.end); };
 
+  // PNG of the plot, named like the ASCII file: original name + _cl / _sm / _clsm (raw: _raw) + column
+  const suffix = ops.includes("cl") && ops.includes("sm") ? "clsm" : ops.includes("cl") ? "cl" : ops.includes("sm") ? "sm" : "raw";
+  const code = ds ? ds.station || ds.instrument.toUpperCase() : "";
+  const day8 = (s) => s.slice(0, 10).replaceAll("-", "");
+  const base = !ds ? "" : mode === "file" && days === 1 ? ds.files[fileIdx].name.replace(/\.[^.]+$/, "") : `${code}_${day8(win.start)}_${day8(addSeconds(win.end, -1))}_${zone.toUpperCase()}`;
+  const onPng = () => Plotly.downloadImage(graph.current, { format: "png", width: 1600, height: 800, scale: 1, filename: `${base}_${suffix}_${col}` });
+
   const onSaveSettings = () => {
     const blob = new Blob([JSON.stringify({ instrument: ds.instrument, station: ds.station, file_time: ds.native, time_shown: zone.toUpperCase(), columns: cols, outlier, smooth, history: history.map((h) => ({ outlier: h.outlier, smooth: h.smooth, range: h.range })) }, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
@@ -128,7 +139,7 @@ export default function App() {
         <aside className="overflow-auto border-r border-slate-200 bg-slate-100/70 p-4">
           <UploadPanel {...{ files, setFiles, instrument, setInstrument, stations, station, setStation, ds, zone, setZone: chooseZone, onUpload, busy }} />
           <CleanPanel {...{ ds, methods, zone, cols, setCols, outlier, setOutlier, smooth, setSmooth, scope, setScope, rStart, setRStart, rEnd, setREnd, zoom, useZoom, useWindow, onApply, onReset, busy, hasRun: history.length > 0 }} />
-          <ExportPanel ds={ds} zone={zone} fileIdx={fileIdx} win={win} hasRun={history.length > 0} onSaveSettings={onSaveSettings} />
+          <ExportPanel {...{ ds, zone, mode, days, fileIdx, win, onPng, onSaveSettings }} hasRun={history.length > 0} hasPlot={!!data} />
         </aside>
         <main className="overflow-auto p-5">
           {error && (
@@ -140,7 +151,7 @@ export default function App() {
           {ds && (<>
             <Stats ds={ds} zone={zone} />
             <FileBar {...{ ds, fileIdx, chooseFile, mode, chooseMode, days, chooseDays, step, canPrev, canNext }} />
-            <PlotCard ds={ds} zone={zone} col={col} setCol={setCol} data={data} onRelayout={onRelayout} title={title} win={win} />
+            <PlotCard ds={ds} zone={zone} col={col} setCol={setCol} data={data} onRelayout={onRelayout} onGraph={(gd) => (graph.current = gd)} title={title} win={win} />
             <HistoryTable history={history} />
           </>)}
         </main>

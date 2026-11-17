@@ -2,3 +2,4 @@
 const toDate = (s) => new Date(s.replace(" ", "T").slice(0, 19) + "Z");
 export const fmt = (d) => d.toISOString().slice(0, 19).replace("T", " ");
 export const addDays = (s, n) => fmt(new Date(toDate(s).getTime() + n * 86400000));
+export const addSeconds = (s, n) => fmt(new Date(toDate(s).getTime() + n * 1000));

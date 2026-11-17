@@ -4,7 +4,7 @@ import { cardCls } from "../ui";
 
 const Plot = (factory.default || factory)(Plotly);
 
-export default function PlotCard({ ds, zone, col, setCol, data, onRelayout, title, win }) {
+export default function PlotCard({ ds, zone, col, setCol, data, onRelayout, onGraph, title, win }) {
   const tr = (d, name, extra) => d && { x: d.t, y: d.v, name, connectgaps: false, type: "scatter", ...extra };
   const traces = data ? [
     tr(data.raw, "raw", { mode: "lines", line: { color: "#94a3b8", width: 1 } }),
@@ -23,13 +23,13 @@ export default function PlotCard({ ds, zone, col, setCol, data, onRelayout, titl
         </div>
       </div>
       <p className="mb-1 mt-1 text-xs text-slate-500">Drag to zoom, double-click to reset. Grey = raw, blue = cleaned, red = removed.</p>
-      <Plot data={traces} onRelayout={onRelayout} useResizeHandler style={{ width: "100%", height: 480 }}
+      <Plot data={traces} onRelayout={onRelayout} onInitialized={(f, gd) => onGraph(gd)} onUpdate={(f, gd) => onGraph(gd)} useResizeHandler style={{ width: "100%", height: 480 }}
         layout={{
           title: { text: title, font: { size: 13 }, x: 0.02, xanchor: "left" },
           uirevision: `${ds.id}${col}${zone}${win.start}${win.end}`,
           margin: { l: 75, r: 20, t: 45, b: 50 }, paper_bgcolor: "rgba(0,0,0,0)",
           xaxis: { title: zone.toUpperCase(), range: [win.start, win.end] },
-          yaxis: { title: `${col} (nT)`, exponentformat: "none", separatethousands: false },
+          yaxis: { title: `${col} (nT)`, exponentformat: "none", tickformat: "~f", hoverformat: ".2f" },   // plain numbers: no "k", no commas
           legend: { orientation: "h" },
         }}
         config={{ displaylogo: false }} />
